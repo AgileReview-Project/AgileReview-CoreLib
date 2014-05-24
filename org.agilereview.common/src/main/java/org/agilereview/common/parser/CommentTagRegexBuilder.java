@@ -10,11 +10,32 @@ package org.agilereview.common.parser;
 import java.util.regex.Pattern;
 
 /**
- * 
+ * Builder for comment tag regex
  * @author Malte Brunnlieb (18.05.2014)
  */
-public class CommentTagRegexBuilder {
+public class CommentTagRegexBuilder extends TagBuilder {
     
     //public static final String RAW_TAG_REGEX = "-?(\\?)?" + Pattern.quote(keySeparator) + "(.+?)" + Pattern.quote(keySeparator) + "(\\?)?(-)?";
     
+    /**
+     * Creates a new builder for tag regex
+     * @param multilineCommentStartSign the multi-line start sign (e.g. /* for java)
+     * @param multilineCommentEndSign the multi-line end sign (e.g. {@literal *}/ for java)
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    public CommentTagRegexBuilder(String multilineCommentStartSign, String multilineCommentEndSign) {
+        super(multilineCommentStartSign, multilineCommentEndSign);
+    }
+    
+    /**
+     * Builds a new tag regex for the given configuration
+     * @return a new tag regex
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    public String buildTagRegex() {
+        String quotedKeysepartor = Pattern.quote(keySeparator);
+        String quotedStartEndTagMarker = Pattern.quote(startEndTagMarker);
+        return Pattern.quote(startTag) + "-?(" + quotedStartEndTagMarker + ")?" + quotedKeysepartor + "(.+?)" + quotedKeysepartor + "("
+                + quotedStartEndTagMarker + ")?(" + Pattern.quote(cleanupMarker) + ")?" + Pattern.quote(endTag);
+    }
 }

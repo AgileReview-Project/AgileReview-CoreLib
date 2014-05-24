@@ -19,13 +19,19 @@ import org.agilereview.common.AbstractProperties;
 public class ParserProperties extends AbstractProperties {
     
     /**
-     * @param properties
+     * Creates a new instance of ParserProperties
+     * @param properties properties input stream
      * @author Malte Brunnlieb (19.05.2014)
      */
     private ParserProperties(InputStream properties) {
         super(properties);
     }
     
+    /**
+     * Creates a new instance of the Parser {@link Properties}
+     * @return {@link Properties} for accessing the parser properties
+     * @author Malte Brunnlieb (19.05.2014)
+     */
     public static Properties newInstance() {
         ParserProperties parserProperties = new ParserProperties(ParserProperties.class.getResourceAsStream("/resources/parser.properties"));
         return parserProperties.loadProperties();

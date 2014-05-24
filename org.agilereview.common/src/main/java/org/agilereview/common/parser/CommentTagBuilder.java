@@ -7,49 +7,25 @@
  */
 package org.agilereview.common.parser;
 
-import java.util.Properties;
-
 /**
  * Using the {@link CommentTagBuilder} you can generate a specific instance of a comment tag assuring the conventions such that every plug-in will be
  * able to interpret your tags afterwards.
  * @author Malte Brunnlieb (18.05.2014)
  */
-public class CommentTagBuilder {
-    
-    /**
-     * Start / End - tag marker
-     */
-    private String startEndTagMarker;
-    /**
-     * Key separator for separating tags from the tag id
-     */
-    private String keySeparator;
-    /**
-     * Cleanup marker sign, which marks a line to be removed after comment removal
-     */
-    private String cleanupMarker;
-    
-    /**
-     * Multi-line comment start sign
-     */
-    private final String startTag;
-    /**
-     * Multi-line comment end sign
-     */
-    private final String endTag;
+public class CommentTagBuilder extends TagBuilder {
     
     /**
      * Determines whether the tag to be build is a start tag
      */
-    private boolean isStartTag;
+    protected boolean isStartTag;
     /**
      * Determines whether the tag to be build is a end tag
      */
-    private boolean isEndTag;
+    protected boolean isEndTag;
     /**
      * Determines whether the line should be removed on comment removal
      */
-    private boolean cleanupLineWithCommentRemoval;
+    protected boolean cleanupLineWithCommentRemoval;
     
     /**
      * Creates a new {@link CommentTagBuilder} instance
@@ -57,14 +33,8 @@ public class CommentTagBuilder {
      * @param multilineCommentEndSign the multi-line end sign (e.g. {@literal *}/ for java)
      * @author Malte Brunnlieb (18.05.2014)
      */
-    private CommentTagBuilder(String multilineCommentStartSign, String multilineCommentEndSign) {
-        startTag = multilineCommentStartSign;
-        endTag = multilineCommentEndSign;
-        
-        Properties parserProperties = ParserProperties.newInstance();
-        startEndTagMarker = parserProperties.getProperty(ParserProperties.START_END_TAG_MARKER_SIGN);
-        keySeparator = parserProperties.getProperty(ParserProperties.KEY_SEPARATOR);
-        cleanupMarker = parserProperties.getProperty(ParserProperties.LINE_REMOVAL_MARKER_SIGN);
+    public CommentTagBuilder(String multilineCommentStartSign, String multilineCommentEndSign) {
+        super(multilineCommentStartSign, multilineCommentEndSign);
     }
     
     /**
@@ -102,22 +72,24 @@ public class CommentTagBuilder {
     
     /**
      * Configures the builder to produce tags with a line-cleanup marker, such that the whole line will be removed on comment removal
+     * @param cleanup states whether the line should be cleaned or not
      * @return the Builder instance
      * @author Malte Brunnlieb (19.05.2014)
      */
-    public CommentTagBuilder cleanupLineWithCommentRemoval() {
-        cleanupLineWithCommentRemoval = true;
+    public CommentTagBuilder cleanupLineWithCommentRemoval(boolean cleanup) {
+        cleanupLineWithCommentRemoval = cleanup;
         return this;
     }
     
     /**
-     * Creates a tag String dependent on the current builder configuration
-     * @param tagId id of the tag, to identify the comment itself
-     * @return the built tag String
-     * @author Malte Brunnlieb (19.05.2014)
+     * Creates a new comment tag for the given configuration
+     * @param tagId id of the comment
+     * @return the new comment tag
+     * @author Malte Brunnlieb (24.05.2014)
      */
     public String buildTag(String tagId) {
         return startTag + "-" + (isStartTag ? startEndTagMarker : "") + keySeparator + tagId + keySeparator + (isEndTag ? startEndTagMarker : "")
                 + (cleanupLineWithCommentRemoval ? cleanupMarker : "") + endTag;
     }
+    
 }
