@@ -26,4 +26,20 @@ public class TestClass {
         System.out.println("Test");
     }
     
+    public String a;
+    /**
+     * JavaDoc
+     */
+    public String b;
+
+    /*
+     * Comment
+     */
+    /**
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    public void method() {
+        
+    }
+    
 }
