@@ -85,10 +85,10 @@ public class FileParser {
                     newLines[1] + 1);
             // adapt starting line if necessary
             if (newLines[0] != -1) {
-                // insert new line if code is in front of javadoc / multi line comments
+                //                 insert new line if code is in front of javadoc / multi line comments
                 String line = lines.get(newLines[0]);
                 if (!line.trim().isEmpty()) {
-                    lines.add(newLines[0], System.getProperty("line.separator"));
+                    lines.add(newLines[0] + 1, "");
                     selStartLine = newLines[0] + 1;
                     startLineInserted = true;
                 } else {
@@ -113,23 +113,20 @@ public class FileParser {
         
         // add new line if start line is last line of javaDoc
         int[] adaptionLines = checkForCodeComment(lines, selStartLine);
-        if (adaptionLines[1] != -1 && lineContains(lines.get(adaptionLines[0]), "/**")) {
-            String line = lines.get(selStartLine + 1);
-            if (!line.trim().isEmpty()) {
-                lines.add(selStartLine + 1, System.getProperty("line.separator"));
-                selStartLine++;
-                selEndLine++;
-                startLineInserted = true;
-                significantlyChanged[0] = true;
-            }
+        if (adaptionLines[0] != -1 && !lines.get(adaptionLines[0]).trim().isEmpty()) {
+            lines.add(selStartLine + 1, "");
+            selStartLine++;
+            selEndLine++;
+            startLineInserted = true;
+            significantlyChanged[0] = true;
         }
         
         // add new line if end line is last line of javaDoc
         adaptionLines = checkForCodeComment(lines, selEndLine);
-        if (adaptionLines[1] != -1 && lineContains(lines.get(adaptionLines[0]), "/**")) {
+        if (adaptionLines[1] != -1 && lineContains(lines.get(adaptionLines[1]), "/**")) {
             String line = lines.get(selEndLine + 1);
             if (!line.trim().isEmpty()) {
-                lines.add(selEndLine + 1, System.getProperty("line.separator"));
+                lines.add(selEndLine + 1, "");
                 selEndLine++;
                 endLineInserted = true;
                 significantlyChanged[1] = true;
@@ -149,8 +146,6 @@ public class FileParser {
             String line = lines.remove(selStartLine);
             line += tagBuilder.buildTag(tagId);
             lines.add(selStartLine, line);
-            
-            // document.getLineLength(selStartLine)-lineDelimiterLength);
         } else {
             LOG.debug("Comment is multi-line comment.");
             // Write tags -> get tags for current file-ending, insert second tag, insert first tag

@@ -47,7 +47,6 @@ public class FileParserTest {
         CommentTagBuilder tagBuilder = new CommentTagBuilder("/*", "*/");
         tagBuilder.isSingleLine();
         Assert.assertEquals("        System.out.println(\"am\");" + tagBuilder.buildTag("TAGID"), getLine(tmpFile, 24));
-        
     }
     
     /**
@@ -78,7 +77,6 @@ public class FileParserTest {
         String endTag = tagBuilder.buildTag(tagId);
         Assert.assertEquals("        System.out.println(\"I\");" + startTag
                 + "\n        System.out.println(\"am\");\n        System.out.println(\"a\");" + endTag, getLines(tmpFile, 23, 25));
-        
     }
     
     /**
@@ -95,13 +93,11 @@ public class FileParserTest {
         String tagId = "TAGID";
         
         //precondition
-        Assert.assertEquals(getLines(testResource, 18, 19), getLines(tmpFile, 18, 19));
+        Assert.assertEquals(getLines(testResource, 15, 19), getLines(tmpFile, 15, 19));
         
         //execution
         FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
         parser.addTags(tagId, 18, 19);
-        
-        System.out.println(FileUtils.readFileToString(tmpFile));
         
         //assertions
         CommentTagBuilder tagBuilder = new CommentTagBuilder("/*", "*/");
@@ -111,7 +107,6 @@ public class FileParserTest {
         String endTag = tagBuilder.buildTag(tagId);
         Assert.assertEquals("    " + startTag + "\n    /**\n     * @param args\n     * @author Malte Brunnlieb (18.05.2014)\n     */" + endTag,
                 getLines(tmpFile, 15, 19));
-        
     }
     
     /**
@@ -128,7 +123,7 @@ public class FileParserTest {
         String tagId = "TAGID";
         
         //precondition
-        Assert.assertEquals(getLines(testResource, 15, 17), getLines(tmpFile, 15, 17));
+        Assert.assertEquals(getLines(testResource, 15, 19), getLines(tmpFile, 15, 19));
         
         //execution
         FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
@@ -142,7 +137,6 @@ public class FileParserTest {
         String endTag = tagBuilder.buildTag(tagId);
         Assert.assertEquals("    " + startTag + "\n    /**\n     * @param args\n     * @author Malte Brunnlieb (18.05.2014)\n     */" + endTag,
                 getLines(tmpFile, 15, 19));
-        
     }
     
     /**
@@ -159,7 +153,7 @@ public class FileParserTest {
         String tagId = "TAGID";
         
         //precondition
-        Assert.assertEquals(getLines(testResource, 17, 18), getLines(tmpFile, 17, 18));
+        Assert.assertEquals(getLines(testResource, 15, 19), getLines(tmpFile, 15, 19));
         
         //execution
         FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
@@ -173,7 +167,70 @@ public class FileParserTest {
         String endTag = tagBuilder.buildTag(tagId);
         Assert.assertEquals("    " + startTag + "\n    /**\n     * @param args\n     * @author Malte Brunnlieb (18.05.2014)\n     */" + endTag,
                 getLines(tmpFile, 15, 19));
+    }
+    
+    /**
+     * Tests adding a multi line comment, where the first line should be adapted and the the adapted line contains contents
+     * @throws URISyntaxException
+     * @throws IOException
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    @Test
+    public void testAddTagsMultiLineComments_startLineAdaptedAndLineInserted_code() throws URISyntaxException, IOException {
+        File testResource = new File(getClass().getResource("/resources/TestClass.java").toURI());
+        File tmpFile = File.createTempFile("TestClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        String tagId = "TAGID";
         
+        //precondition
+        Assert.assertEquals(getLines(testResource, 29, 33), getLines(tmpFile, 29, 33));
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.addTags(tagId, 30, 32);
+        
+        //assertions
+        CommentTagBuilder tagBuilder = new CommentTagBuilder("/*", "*/");
+        tagBuilder.isMultilineStartTag();
+        tagBuilder.cleanupLineWithCommentRemoval(true);
+        String startTag = tagBuilder.buildTag(tagId);
+        tagBuilder.isMultilineEndTag();
+        tagBuilder.cleanupLineWithCommentRemoval(false);
+        String endTag = tagBuilder.buildTag(tagId);
+        
+        Assert.assertEquals("    public String a;\n" + startTag + "\n    /**\n     * JavaDoc\n     */" + endTag, getLines(tmpFile, 29, 33));
+    }
+    
+    /**
+     * Tests adding a multi line comment, where the first line should be adapted and the the adapted line is end of multi-line comment
+     * @throws URISyntaxException
+     * @throws IOException
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    @Test
+    public void testAddTagsMultiLineComments_startLineAdaptedAndLineInserted_comment() throws URISyntaxException, IOException {
+        File testResource = new File(getClass().getResource("/resources/TestClass.java").toURI());
+        File tmpFile = File.createTempFile("TestClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        String tagId = "TAGID";
+        
+        //precondition
+        Assert.assertEquals(getLines(testResource, 37, 41), getLines(tmpFile, 37, 41));
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.addTags(tagId, 38, 40);
+        
+        //assertions
+        CommentTagBuilder tagBuilder = new CommentTagBuilder("/*", "*/");
+        tagBuilder.isMultilineStartTag();
+        tagBuilder.cleanupLineWithCommentRemoval(true);
+        String startTag = tagBuilder.buildTag(tagId);
+        tagBuilder.isMultilineEndTag();
+        tagBuilder.cleanupLineWithCommentRemoval(false);
+        String endTag = tagBuilder.buildTag(tagId);
+        
+        Assert.assertEquals("     */\n" + startTag + "\n    /**\n     * JavaDoc\n     */" + endTag, getLines(tmpFile, 37, 41));
     }
     
     /**

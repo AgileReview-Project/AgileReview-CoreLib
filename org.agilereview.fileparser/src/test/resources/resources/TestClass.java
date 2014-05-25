@@ -36,7 +36,7 @@ public class TestClass {
      * Comment
      */
     /**
-     * @author Malte Brunnlieb (24.05.2014)
+     * JavaDoc
      */
     public void method() {
         
