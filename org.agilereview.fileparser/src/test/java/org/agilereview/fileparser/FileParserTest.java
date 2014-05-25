@@ -234,6 +234,72 @@ public class FileParserTest {
     }
     
     /**
+     * Tests removal of a single line comment
+     * @throws IOException
+     * @throws URISyntaxException
+     * @author Malte Brunnlieb (25.05.2014)
+     */
+    @Test
+    public void testRemoveTag_singleLine() throws IOException, URISyntaxException {
+        File testResource = new File(getClass().getResource("/resources/CommentedClass.java").toURI());
+        File tmpFile = File.createTempFile("CommentedClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        String tagId = "111";
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.removeTags(tagId);
+        
+        //assertions
+        File targetFile = new File(getClass().getResource("/resources/CommentedClass_111removed.java").toURI());
+        Assert.assertArrayEquals(FileUtils.readLines(targetFile).toArray(), FileUtils.readLines(tmpFile).toArray());
+    }
+    
+    /**
+     * Tests removal of a multi line comment with line removal
+     * @throws IOException
+     * @throws URISyntaxException
+     * @author Malte Brunnlieb (25.05.2014)
+     */
+    @Test
+    public void testRemoveTag_multiLine_withLineRemoval() throws IOException, URISyntaxException {
+        File testResource = new File(getClass().getResource("/resources/CommentedClass.java").toURI());
+        File tmpFile = File.createTempFile("CommentedClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        String tagId = "333";
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.removeTags(tagId);
+        
+        //assertions
+        File targetFile = new File(getClass().getResource("/resources/CommentedClass_333removed.java").toURI());
+        Assert.assertArrayEquals(FileUtils.readLines(targetFile).toArray(), FileUtils.readLines(tmpFile).toArray());
+    }
+    
+    /**
+     * Tests removal of a multi line comment
+     * @throws IOException
+     * @throws URISyntaxException
+     * @author Malte Brunnlieb (25.05.2014)
+     */
+    @Test
+    public void testRemoveTag_multiLine() throws IOException, URISyntaxException {
+        File testResource = new File(getClass().getResource("/resources/CommentedClass.java").toURI());
+        File tmpFile = File.createTempFile("CommentedClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        String tagId = "444";
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.removeTags(tagId);
+        
+        //assertions
+        File targetFile = new File(getClass().getResource("/resources/CommentedClass_444removed.java").toURI());
+        Assert.assertArrayEquals(FileUtils.readLines(targetFile).toArray(), FileUtils.readLines(tmpFile).toArray());
+    }
+    
+    /**
      * Returns the requested line interval by connecting the lines with \n line breaks
      * @param file File to get the lines from
      * @param from first line to retrieve

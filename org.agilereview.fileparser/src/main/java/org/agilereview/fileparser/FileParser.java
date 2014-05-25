@@ -7,12 +7,19 @@
  */
 package org.agilereview.fileparser;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.agilereview.common.parser.CommentTagBuilder;
 import org.agilereview.common.parser.CommentTagRegexBuilder;
+import org.agilereview.common.parser.ParserProperties;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +65,8 @@ public class FileParser {
      * @param tagId tag id to be inserted
      * @param startLine start line of the comment
      * @param endLine end line of the comment
-     * @author Malte Brunnlieb (18.05.2014)
      * @throws IOException if the file could not be read or written
+     * @author Malte Brunnlieb (18.05.2014)
      */
     public void addTags(String tagId, int startLine, int endLine) throws IOException {
         LOG.debug("Add tags for comment with tagId '{}' to start line {} / end line {}", tagId, startLine, endLine);
@@ -294,14 +301,33 @@ public class FileParser {
     }
     
     /**
-     * TODO JavaDoc
-     * @param file
-     * @param tagId
-     * @param multiLineCommentTags
+     * Removes all tags with the given tag id from the file.
+     * @param tagId to be removed
+     * @throws IOException if the file could not be read or written
+     * @throws FileNotFoundException if the file does not exist
      * @author Malte Brunnlieb (18.05.2014)
      */
-    public void removeTags(File file, String tagId, String[] multiLineCommentTags) {
-        
+    public void removeTags(String tagId) throws FileNotFoundException, IOException {
+        String removalCharacter = ParserProperties.newInstance().getProperty(ParserProperties.LINE_REMOVAL_MARKER_SIGN);
+        Pattern tagPattern = Pattern.compile(tagRegexBuilder.buildTagRegex(tagId, false));
+        Matcher matcher;
+        String line;
+        List<String> lines = new LinkedList<String>();
+        try (FileReader fileReader = new FileReader(file); BufferedReader reader = new BufferedReader(new FileReader(file));) {
+            while ((line = reader.readLine()) != null) {
+                matcher = tagPattern.matcher(line);
+                boolean removeLine = false;
+                if (matcher.find()) {
+                    if (removalCharacter.equals(matcher.group(3))) {
+                        String newLine = matcher.replaceAll("");
+                        if (newLine.trim().isEmpty()) removeLine = true;
+                    }
+                }
+                if (!removeLine) lines.add(matcher.replaceAll(""));
+                
+            }
+            FileUtils.writeLines(file, lines);
+        }
     }
     
     /**
