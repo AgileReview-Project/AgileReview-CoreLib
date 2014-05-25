@@ -23,17 +23,21 @@ import org.slf4j.LoggerFactory;
  */
 public class FileParser {
     
-    private static Logger LOG = LoggerFactory.getLogger(FileParser.class);
-    
     /**
-     * New line character
+     * Logger instance
      */
-    private static String newline = System.getProperty("line.separator");
-    
+    private static Logger LOG = LoggerFactory.getLogger(FileParser.class);
+    /**
+     * {@link File} to be adressed
+     */
     private File file;
-    
+    /**
+     * Comment tags for multi line comments
+     */
     private String[] tags;
-    
+    /**
+     * Tag regex builder instance
+     */
     private CommentTagRegexBuilder tagRegexBuilder;
     
     /**
@@ -49,24 +53,24 @@ public class FileParser {
     }
     
     /**
-     * TODO JavaDoc
-     * @param file
-     * @param startLine
-     * @param endLine
-     * @param multiLineCommentTags
+     * Adds tags with the given tag id to the document from line selStartLine to selEndLine. If there are conflicts with comments in the start line or
+     * end line, the comment will be expanded to the next greater valid region.
+     * @param tagId tag id to be inserted
+     * @param startLine start line of the comment
+     * @param endLine end line of the comment
      * @author Malte Brunnlieb (18.05.2014)
-     * @throws IOException
+     * @throws IOException if the file could not be read or written
      */
-    public void addTags(String tagId, int selStartLine, int selEndLine) throws IOException {
-        LOG.debug("Add tags for comment with tagId '{}' to start line {} / end line {}", tagId, selStartLine, selEndLine);
+    public void addTags(String tagId, int startLine, int endLine) throws IOException {
+        LOG.debug("Add tags for comment with tagId '{}' to start line {} / end line {}", tagId, startLine, endLine);
         
-        selStartLine--;
-        selEndLine--;
+        startLine--;
+        endLine--;
         
         CommentTagBuilder tagBuilder = new CommentTagBuilder(tags[0], tags[1]);
         
         boolean startLineInserted = false, endLineInserted = false;
-        int origSelStartLine = selStartLine;
+        int origSelStartLine = startLine;
         boolean[] significantlyChanged = new boolean[] { false, false };
         
         // TODO maybe better work on a stream than loading the whole file in memory
@@ -79,7 +83,7 @@ public class FileParser {
         List<String> lines = FileUtils.readLines(file);
         
         // check if selection needs to be adapted
-        int[] newLines = computeSelectionAdapations(lines, selStartLine, selEndLine);
+        int[] newLines = computeSelectionAdapations(lines, startLine, endLine);
         if (newLines[0] != -1 || newLines[1] != -1) {
             LOG.debug("Comment starts and/or ends within a source comment -> adapt lines to start line {} / end line {}", newLines[0] + 1,
                     newLines[1] + 1);
@@ -89,14 +93,14 @@ public class FileParser {
                 String line = lines.get(newLines[0]);
                 if (!line.trim().isEmpty()) {
                     lines.add(newLines[0] + 1, "");
-                    selStartLine = newLines[0] + 1;
+                    startLine = newLines[0] + 1;
                     startLineInserted = true;
                 } else {
-                    selStartLine = newLines[0];
+                    startLine = newLines[0];
                 }
                 
                 // only inform the user about these adaptations if he did not select the whole javaDoc
-                if (origSelStartLine - 1 != selStartLine) {
+                if (origSelStartLine - 1 != startLine) {
                     significantlyChanged[0] = true;
                 }
             }
@@ -104,36 +108,36 @@ public class FileParser {
             // adapt ending line if necessary
             // add a new line if a line was inserted before
             if (newLines[1] != -1) {
-                selEndLine = newLines[1] + (startLineInserted ? 1 : 0);
+                endLine = newLines[1] + (startLineInserted ? 1 : 0);
                 significantlyChanged[1] = true;
             } else {
-                selEndLine += (startLineInserted ? 1 : 0);
+                endLine += (startLineInserted ? 1 : 0);
             }
         }
         
         // add new line if start line is last line of javaDoc
-        int[] adaptionLines = checkForCodeComment(lines, selStartLine);
+        int[] adaptionLines = checkForCodeComment(lines, startLine);
         if (adaptionLines[0] != -1 && !lines.get(adaptionLines[0]).trim().isEmpty()) {
-            lines.add(selStartLine + 1, "");
-            selStartLine++;
-            selEndLine++;
+            lines.add(startLine + 1, "");
+            startLine++;
+            endLine++;
             startLineInserted = true;
             significantlyChanged[0] = true;
         }
         
         // add new line if end line is last line of javaDoc
-        adaptionLines = checkForCodeComment(lines, selEndLine);
+        adaptionLines = checkForCodeComment(lines, endLine);
         if (adaptionLines[1] != -1 && lineContains(lines.get(adaptionLines[1]), "/**")) {
-            String line = lines.get(selEndLine + 1);
+            String line = lines.get(endLine + 1);
             if (!line.trim().isEmpty()) {
-                lines.add(selEndLine + 1, "");
-                selEndLine++;
+                lines.add(endLine + 1, "");
+                endLine++;
                 endLineInserted = true;
                 significantlyChanged[1] = true;
             }
         }
         
-        if (selStartLine == selEndLine) {
+        if (startLine == endLine) {
             LOG.debug("Comment is single-line comment.");
             // Only one line is selected
             // Write tag -> get start+end-tag for current file-ending, insert into file
@@ -143,9 +147,9 @@ public class FileParser {
             } else {
                 tagBuilder.cleanupLineWithCommentRemoval(false);
             }
-            String line = lines.remove(selStartLine);
+            String line = lines.remove(startLine);
             line += tagBuilder.buildTag(tagId);
-            lines.add(selStartLine, line);
+            lines.add(startLine, line);
         } else {
             LOG.debug("Comment is multi-line comment.");
             // Write tags -> get tags for current file-ending, insert second tag, insert first tag
@@ -155,9 +159,9 @@ public class FileParser {
             } else {
                 tagBuilder.cleanupLineWithCommentRemoval(false);
             }
-            String line = lines.remove(selEndLine);
+            String line = lines.remove(endLine);
             line += tagBuilder.buildTag(tagId);
-            lines.add(selEndLine, line);
+            lines.add(endLine, line);
             
             tagBuilder.isMultilineStartTag();
             if (startLineInserted) {
@@ -165,9 +169,9 @@ public class FileParser {
             } else {
                 tagBuilder.cleanupLineWithCommentRemoval(false);
             }
-            line = lines.remove(selStartLine);
+            line = lines.remove(startLine);
             line += tagBuilder.buildTag(tagId);
-            lines.add(selStartLine, line);
+            lines.add(startLine, line);
         }
         
         LOG.debug("Write file back.");
@@ -212,6 +216,7 @@ public class FileParser {
     /**
      * Checks whether adding an AgileReview comment at the current selection would destroy a code comment and computes adapted line numbers to avoid
      * destruction of code comments.
+     * @param lines of the document
      * @param startLine the current startLine of the selection
      * @param endLine the current endLine of the selection
      * @return and array containing the new start (position 0) and endline (position 1). If not nothing is to be changed the content is -1 at position
@@ -236,8 +241,8 @@ public class FileParser {
     
     /**
      * Checks whether the given line is within a code comment. If this holds the code comments start and endline is returned, else {-1, -1}.
+     * @param lines of the document
      * @param line the line to check
-     * @param tags the start and endtag of code comments
      * @return [-1, -1] if line is not within a code comment, else [startline, endline] of the code comment
      */
     private int[] checkForCodeComment(List<String> lines, int line) {
@@ -278,7 +283,7 @@ public class FileParser {
     /**
      * Checks whether the line identified by the lineNumber contains the given string. This function erases all AgileReview related comment tags
      * before searching for the given string.
-     * @param linenumber line number of the document
+     * @param line to be checked
      * @param string string to be searched for
      * @return true, if the string is contained in the given line ignoring AgileReview tags,<br> false otherwise
      * @author Malte Brunnlieb (08.09.2012)
