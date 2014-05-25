@@ -15,8 +15,6 @@ import java.util.regex.Pattern;
  */
 public class CommentTagRegexBuilder extends TagBuilder {
     
-    //public static final String RAW_TAG_REGEX = "-?(\\?)?" + Pattern.quote(keySeparator) + "(.+?)" + Pattern.quote(keySeparator) + "(\\?)?(-)?";
-    
     /**
      * Creates a new builder for tag regex
      * @param multilineCommentStartSign the multi-line start sign (e.g. /* for java)
@@ -28,14 +26,29 @@ public class CommentTagRegexBuilder extends TagBuilder {
     }
     
     /**
-     * Builds a new tag regex for the given configuration
-     * @return a new tag regex
+     * Builds a new tag regex for the given configuration. The following regex groups can be accessed if no new group is inserted via the tagId:<br>
+     * (1) start tag marker character<br> (2) end tag marker character<br>tagId<br>(3) line removal marker character<br>
+     * @param tagId tag id to be searched for
+     * @param isRegex states whether the passed tagId is already a regex
+     * @return the built tag regex
+     * @author Malte Brunnlieb (24.05.2014)
+     */
+    public String buildTagRegex(String tagId, boolean isRegex) {
+        String quotedKeysepartor = Pattern.quote(keySeparator);
+        String quotedStartEndTagMarker = Pattern.quote(startEndTagMarker);
+        String searchRegex = isRegex ? tagId : Pattern.quote(tagId);
+        return Pattern.quote(startTag) + "-?(" + quotedStartEndTagMarker + ")?" + quotedKeysepartor + searchRegex + quotedKeysepartor + "("
+                + quotedStartEndTagMarker + ")?(" + Pattern.quote(cleanupMarker) + ")?" + Pattern.quote(endTag);
+    }
+    
+    /**
+     * Builds a new tag regex for the given configuration. The following regex groups can be accessed if no new group is inserted via the tagId:<br>
+     * (1) start tag marker character<br> (2) end tag marker character<br>(3) tag id<br>(4) line removal marker character<br>
+     * @return the built tag regex
      * @author Malte Brunnlieb (24.05.2014)
      */
     public String buildTagRegex() {
-        String quotedKeysepartor = Pattern.quote(keySeparator);
-        String quotedStartEndTagMarker = Pattern.quote(startEndTagMarker);
-        return Pattern.quote(startTag) + "-?(" + quotedStartEndTagMarker + ")?" + quotedKeysepartor + "(.+?)" + quotedKeysepartor + "("
-                + quotedStartEndTagMarker + ")?(" + Pattern.quote(cleanupMarker) + ")?" + Pattern.quote(endTag);
+        return buildTagRegex("(.+?)", true);
     }
+    
 }
