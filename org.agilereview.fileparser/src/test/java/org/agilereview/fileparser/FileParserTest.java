@@ -300,6 +300,27 @@ public class FileParserTest {
     }
     
     /**
+     * Tests comment tag cleanup
+     * @throws IOException
+     * @throws URISyntaxException
+     * @author Malte Brunnlieb (25.05.2014)
+     */
+    @Test
+    public void testclearTags() throws IOException, URISyntaxException {
+        File testResource = new File(getClass().getResource("/resources/CommentedClass.java").toURI());
+        File tmpFile = File.createTempFile("CommentedClass", "java");
+        FileUtils.copyFile(testResource, tmpFile);
+        
+        //execution
+        FileParser parser = new FileParser(tmpFile, new String[] { "/*", "*/" });
+        parser.clearAllTags();
+        
+        //assertions
+        File targetFile = new File(getClass().getResource("/resources/CommentedClass_allRemoved.java").toURI());
+        Assert.assertArrayEquals(FileUtils.readLines(targetFile).toArray(), FileUtils.readLines(tmpFile).toArray());
+    }
+    
+    /**
      * Returns the requested line interval by connecting the lines with \n line breaks
      * @param file File to get the lines from
      * @param from first line to retrieve

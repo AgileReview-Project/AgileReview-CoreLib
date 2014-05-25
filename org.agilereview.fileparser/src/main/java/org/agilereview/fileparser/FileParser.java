@@ -9,7 +9,6 @@ package org.agilereview.fileparser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -304,12 +303,30 @@ public class FileParser {
      * Removes all tags with the given tag id from the file.
      * @param tagId to be removed
      * @throws IOException if the file could not be read or written
-     * @throws FileNotFoundException if the file does not exist
      * @author Malte Brunnlieb (18.05.2014)
      */
-    public void removeTags(String tagId) throws FileNotFoundException, IOException {
+    public void removeTags(String tagId) throws IOException {
+        removeTags(Pattern.compile(tagRegexBuilder.buildTagRegex(tagId, false)), 0);
+    }
+    
+    /**
+     * Clears all tags in the file from comment tags
+     * @throws IOException if the file could not be read or written
+     * @author Malte Brunnlieb (18.05.2014)
+     */
+    public void clearAllTags() throws IOException {
+        removeTags(Pattern.compile(tagRegexBuilder.buildTagRegex()), 1);
+    }
+    
+    /**
+     * Removes all tags matching the given tag pattern
+     * @param tagPattern tags to be removed
+     * @param groupIncrement value to increment the group value for retrieving the line removal marker
+     * @throws IOException if the file could not be read or written
+     * @author Malte Brunnlieb (25.05.2014)
+     */
+    private void removeTags(Pattern tagPattern, int groupIncrement) throws IOException {
         String removalCharacter = ParserProperties.newInstance().getProperty(ParserProperties.LINE_REMOVAL_MARKER_SIGN);
-        Pattern tagPattern = Pattern.compile(tagRegexBuilder.buildTagRegex(tagId, false));
         Matcher matcher;
         String line;
         List<String> lines = new LinkedList<String>();
@@ -318,26 +335,19 @@ public class FileParser {
                 matcher = tagPattern.matcher(line);
                 boolean removeLine = false;
                 if (matcher.find()) {
-                    if (removalCharacter.equals(matcher.group(3))) {
+                    if (removalCharacter.equals(matcher.group(3 + groupIncrement))) {
+                        LOG.debug("Tag is marked such that the line should be removed if empty");
                         String newLine = matcher.replaceAll("");
-                        if (newLine.trim().isEmpty()) removeLine = true;
+                        if (newLine.trim().isEmpty()) {
+                            removeLine = true;
+                            LOG.debug("Line removed");
+                        }
                     }
                 }
                 if (!removeLine) lines.add(matcher.replaceAll(""));
-                
             }
-            FileUtils.writeLines(file, lines);
         }
-    }
-    
-    /**
-     * TODO JavaDoc
-     * @param file
-     * @param multiLineCommentTags
-     * @author Malte Brunnlieb (18.05.2014)
-     */
-    public void clearAllTags(File file, String[] multiLineCommentTags) {
-        
+        FileUtils.writeLines(file, lines);
     }
     
 }
