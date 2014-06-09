@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
  * Implementation of a file parser which adds AgileReview comment tags to a file
  * @author Malte Brunnlieb (18.05.2014)
  */
+// TODO encoding problem. Try to discover the encoding of the target file
 public class FileParser {
     
     /**
