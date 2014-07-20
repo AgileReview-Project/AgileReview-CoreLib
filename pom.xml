@@ -75,7 +75,16 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+
+            <extensions>
+            <!-- Enabling the use of FTP -->
+                <extension>
+                    <groupId>org.apache.maven.wagon</groupId>
+                    <artifactId>wagon-ftp</artifactId>
+                    <version>1.0-beta-6</version>
+                </extension>
+            </extensions>
+        </build>
 
 	<reporting>
 		<plugins>
@@ -95,5 +104,18 @@
 			</plugin>
 		</plugins>
 	</reporting>
+
+        <distributionManagement>
+            <repository>
+                <id>org.agilereview.snapshots</id>
+                <name>AgileReview CoreLib Repository</name>
+                <url>ftp://agilereview.org/m2/releases/</url>
+            </repository>
+            <snapshotRepository>
+                <id>org.agilereview.releases</id>
+                <name>AgileReview CoreLib Repository</name>
+                <url>ftp://agilereview.org/m2/snapshots/</url>
+            </snapshotRepository>
+        </distributionManagement>
 
 </project>
