@@ -1,7 +1,6 @@
 language: java
-after_script: "mvn deploy -s .m2/settings.xml"
+after_script: mvn deploy -s .m2/settings.xml
 env:
   global:
-  - secure: nG4pNXh8uJObFZwcYIhTJ1XLTUT4tw45R/wjs4LRYr6E6j+pWlGYBzK4ONbxrLuLp7fXrf/88siSCx6uWJJSjZCKoOlJ8zDUf9+Ma9ir4rthzgWBFziLcUzjgiu943+JSvWIGFLKOhkGN/AOKjJEoAF65FlHndhv84Yj0LoA7MU=
-  - secure: KrC8iGmMgbEl8Aa5Nqk9hvNz0AG/dWV3LBam0yrahdJAOsMXHdDKQiHVua6xSz5ftOdY3IrXFQs+m1l9BrKqmI+yuLvSjfzDC3hUM6RlcMoGIsfYscfJS92Cb90nVRKgoL3/acU3tBF0/kETg18xpbz/mOTjpDoWlegKmc2fxNI=
-
+  - secure: ahWZBhwOoQb32L0TFPpaWSZynYlRiEMf6gVON7cQL9oSOFbKE2sirfc3LTxxZqsrEqPxYlaR7qdX2DyWSfXwmrk9SPTfuQmH1bkA94C++kSbLd8SlooxlP3hME/AzkbFQqA1iLJVVelRsRBJgu9Ib625xZDwYJTVs6AFuQNmKxI=
+  - secure: N+VJm7y5ut5fi4bsxEVQsIfMtVlm8i8J9LRuBX2mUOqHq7NYBy7iXVdGCWz1Wwc0ApNJIN0eEnf7UKhgY4Asy3x4Qw0huDNbF0bH4spa/Wc3+JVrp6hDHvnEeSBNb1RFHGXgJG+QGR1/RA6WhrLTWqCj3kq61bE7T6gGIEHY1QQ=
